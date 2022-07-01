@@ -14,11 +14,11 @@ export default class Query implements IQuery {
   _req;
   fields: IQueryFields = {};
   files: IQueryFiles = {};
-  boundary;
+  _boundary;
 
   constructor(req: IReq) {
     this._req = req;
-    this.boundary = this.getBoundary(req.headers);
+    this._boundary = this.getBoundary(req.headers);
   }
 
   /**
@@ -128,7 +128,7 @@ export default class Query implements IQuery {
 
     // convert buffers
     const aBody = utils.buff2arr(body);
-    const aBoundary = utils.buff2arr(this.boundary);
+    const aBoundary = utils.buff2arr(this._boundary);
 
     // get "coordinates" of body content parts
     const positions = this.getSubPositions(aBody, aBoundary);

@@ -37,6 +37,16 @@
     "webpack-cli": "^4.10.0"
   },
   "scripts": {
-    "prettify": "prettier --write \"**/*.(js|ts|json)\""
-  }
+    "prettify": "prettier --write \"**/*.(js|ts|json)\"",
+    "release": "webpack && npm version patch && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IhorKirei/pomeranian-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/IhorKirei/pomeranian-js/issues"
+  },
+  "homepage": "https://github.com/IhorKirei/pomeranian-js#readme",
+  "types": "./dist/index.d.ts"
 }

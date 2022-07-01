@@ -5,7 +5,7 @@ export default class Query implements IQuery {
     _req: IReq;
     fields: IQueryFields;
     files: IQueryFiles;
-    boundary: Buffer;
+    _boundary: Buffer;
     constructor(req: IReq);
     /**
      * Parse body content, search for fields and files

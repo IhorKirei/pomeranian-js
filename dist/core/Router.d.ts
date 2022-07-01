@@ -1,5 +1,3 @@
-/// <reference types="node" />
-import { UrlWithParsedQuery } from "url";
 import Middleware from "./Middleware";
 import { IReq, IRes } from "../models/internal/misc";
 import IAppRoute from "../models/IAppRoute";
@@ -7,9 +5,6 @@ import { IRouter } from "../models/internal/IRouter";
 export default class Router implements IRouter {
     routes: IAppRoute[];
     layers: Middleware;
-    parsed_all: {};
-    parsed_query: UrlWithParsedQuery | null;
-    request_uri: string;
     request_path: string;
     request_method: string;
     /**

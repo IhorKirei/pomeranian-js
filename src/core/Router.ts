@@ -13,12 +13,6 @@ export default class Router implements IRouter {
 
   layers = new Middleware();
 
-  parsed_all = {};
-
-  parsed_query: UrlWithParsedQuery | null = null;
-
-  request_uri = "";
-
   request_path: string = "";
 
   request_method = "";
@@ -59,9 +53,9 @@ export default class Router implements IRouter {
       return null;
     }
 
-    this.parsed_query = url.parse(req.url, true);
-    this.request_uri = this.parsed_query.href;
-    this.request_path = this.parsed_query.pathname || "";
+    const parsedQuery: UrlWithParsedQuery = url.parse(req.url, true);
+
+    this.request_path = parsedQuery.pathname || "";
     this.request_method = req.method || "GET";
 
     const route = this.matchUrl();
@@ -85,9 +79,7 @@ export default class Router implements IRouter {
 
     const { fields, files }: IQueryBody = await query.parseBody();
 
-    this.parsed_all = { ...this.parsed_query.query, ...fields };
-
-    req.query = this.parsed_all;
+    req.query = { ...parsedQuery.query, ...fields };
     req.files = files;
     req.params = this.getParams(route.url);
 
