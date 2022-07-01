@@ -2,7 +2,7 @@
   "name": "pomeranian-js",
   "description": "Simple and incredibly fast framework for Node.js",
   "main": "./dist/index.js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Ihor Kirei <ihor.kirei@gmail.com>",
   "license": "MIT",
   "keywords": [
