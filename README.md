@@ -4,46 +4,71 @@
 [![Coverage Status](https://coveralls.io/repos/github/IhorKirei/pomeranian-js/badge.svg?branch=master)](https://coveralls.io/github/IhorKirei/pomeranian.js?branch=master)
 
 # Pomeranian.js
-High performance, extendable solution with less unnecessary features. Achieve the maximum possible speed of Node.js framework!
+Hello buddy! This is another light-weight high performance, extendable solution for you to build modern, scalable Node.js applications. It's similar to what you have already seen, to get details please read this documentation.
 
-## Installation
+### Installation
 
 ```bash
-$ npm install pomeranian-js --save
+npm install pomeranian-js --save
+```
+or
+```bash
+yarn add pomeranian-js
 ```
 
-## New Application
-
+### Hello World
+Just a quick example how you can start.
 ```js
 const Application = require("pomeranian-js");
-
 const app = new Application();
+
+app.addRoute({
+  method: "GET",
+  url: "/"
+}, (req, res) => {
+  res.json(200, { status: "Success" });
+});
+
 app.start();
 ```
 
-## Configuration
-Using next method you can change application settings. All settings are optional.
+### Middlewares
+Basically this is a simple way to do something with **req** and **res** objects while processing client's requests, e.g. add authorization logic before API callback runs. I call this feature as **layers**.
+
+You can define layers using two ways:
+
+##### Local
+For specific route rule:
 ```js
-app.tune({
-    cors: Boolean, // default false
-    debug: Boolean // default false
-});
+app.addRoute(options, [
+  (req, res, next) => {
+    // do something with "req" and "res" objects and run callback
+    next();
+  }
+], callback);
 ```
 
-##### Parameters
-- **cors** - cross-origin resource sharing, read details [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
-- **debug** - application with enabled debug mode prints speed for each request
+##### Global
+Will be executed for all routes:
+```js
+app.useLayer([
+  (req, res, next) => {
+    // do something with "req" and "res" objects and run callback
+    next();
+  }
+]);
+```
 
-## Routes
-For adding new routing rule, you should use **addRoute** method:
+### Routes
+For adding a new routing rule, you should use **addRoute** method:
 
 ```js
 app.addRoute({
-    method: String, // default GET
-    url: String,
-    match: Object,
-    query: Object,
-    fileParsing: Boolean // default true
+  method: String, // default GET
+  url: String,
+  match: Object,
+  query: Object,
+  fileParsing: Boolean // default false
 }, (req, res) => {});
 ```
 
@@ -60,62 +85,64 @@ This is how you can handle client's requests.
 You can do it with typical way:
 ```js
 app.addRoute(options, (req, res) => {
-    res.statusCode = httpCode;
-    res.end(content);
+  res.statusCode = httpCode;
+  res.end(content);
 });
 ```
-Or with custom way which is provided by ActiveJS:
+Or using our methods out of the box (**res.html**, **res.json**, **res.redirect**):
 
 ```js
 app.addRoute(options, (req, res) => {
-    res.html(httpCode, html); // return HTML content
-});
-```
-```js
-app.addRoute(options, (req, res) => {
-    res.json(httpCode, json); // return JSON object
+  res.html(httpCode, html); // return HTML content
 });
 ```
 ```js
 app.addRoute(options, (req, res) => {
-    res.redirect("/path/", 301); // redirect user to another page or website
-});
-```
-Few examples how you can use it:
-
-```js
-app.addRoute({
-    url: "/{category}",
-    match: {
-        category: ["phones", "tablets"]
-    }
-}, (req, res) => {
-    res.json(200, req.params);
+  res.json(httpCode, json); // return JSON object
 });
 ```
 ```js
-app.addRoute({
-    url: "/{category}/{name}",
-    match: {
-        category: ["phones", "tablets"],
-        name: "([a-z0-9]{3,50}"
-    }
-}, (req, res) => {
-    res.json(200, req.params);
-});
-```
-```js
-app.addRoute({
-    url: "/{category}/{name}",
-    query: {
-        password: "[a-z0-9]{3,50}"
-    }
-}, (req, res) => {
-    res.json(200, req.query);
+app.addRoute(options, (req, res) => {
+  res.redirect("/path/", 301); // redirect user to another page or website
 });
 ```
 
-## Variables
+### Routes Examples
+Just a few examples how you can use it:
+
+```js
+app.addRoute({
+  url: "/{category}",
+  match: {
+    category: ["phones", "tablets"]
+  }
+}, (req, res) => {
+  res.json(200, req.params);
+});
+```
+```js
+app.addRoute({
+  url: "/{category}/{name}",
+  match: {
+    category: ["phones", "tablets"],
+    name: "([a-z0-9]{3,50}"
+  }
+}, (req, res) => {
+  res.json(200, req.params);
+});
+```
+```js
+app.addRoute({
+  url: "/{category}/{name}",
+  query: {
+    password: "[a-z0-9]{3,50}"
+  }
+}, (req, res) => {
+  res.json(200, { ...req.params, ...req.query });
+});
+```
+
+### Variables
 While processing client's request you can get access to internal variables in **req** object:
 
 - **req.client_ip** - client's IP address
@@ -125,49 +152,32 @@ While processing client's request you can get access to internal variables in **
 - **req.files** - name, extension, mime and content of uploaded file
 - **req.route** - current route rule
 
-## Middleware
-Basically this is a simple way to do something with **req** and **res** objects while processing client's requests, e.g. add authorization logic before API callback runs. In ActiveJS we know this feature as **layers**.
-
-You can define layers using two ways:
-
-##### Specific
-Will be executed for request matched specific route rule:
+### Configuration
+Using next method you can change application settings. All settings are optional.
 ```js
-app.addRoute(options, (req, res, next) => {
-    // do something with "req" and "res" objects and run callback
-    next();
-}, callback);
-```
-
-##### Global
-Will be executed for each request (all routes):
-```js
-app.useLayer((req, res, next) => {
-    // do something with "req" and "res" objects and run callback
-    next();
+app.tune({
+  cors: Boolean, // default false
+  debug: Boolean // default false
 });
 ```
-If you want to use few layers, you must send array with functions, instead of one function:
-```js
-app.addRoute(options, [Function, Function, Function], callback);
-```
-```js
-app.useLayer([Function, Function, Function]);
-```
 
-## Tips
+##### Parameters
+- **cors** - cross-origin resource sharing, read details [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+- **debug** - application with enabled debug mode prints speed for each request
+-
+### Advices
 We collected some advices for you, it can be useful in some cases.
 
 ##### Page not found
 If some client's request doesn't match your routing rules, our framework will shows blank page with 404 http status. Of course for production we need more intelligent solution, so here is example how you can show your custom "not found" page:
 ```js
 app.addRoute({
-    url: "/{url}",
-    match: {
-        url: "(.*)"
-    }
+  url: "/{url}",
+  match: {
+    url: "(.*)"
+  }
 }, (req, res) => {
-    res.html(404, content);
+  res.html(404, content);
 });
 ```
 Just need add new routing rule for processing all requests. Important thing: this rule must be last one - just in case to overwrite previous, it's very important.
