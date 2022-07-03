@@ -1,6 +1,6 @@
 import { showError } from "../utils.js";
 
-import { IReq, IRes, IMiddleware } from "../models";
+import { AppMiddleware, Req, Res } from "../models";
 
 export default class Middleware {
   /**
@@ -16,7 +16,7 @@ export default class Middleware {
   /**
    * Add middleware layers for specific request
    */
-  addLocal(route_id: string, layers: IMiddleware[]) {
+  addLocal(route_id: string, layers: AppMiddleware[]) {
     if (!route_id) {
       showError("addLocal() invalid route id");
     }
@@ -25,12 +25,12 @@ export default class Middleware {
       return;
     }
 
-    const result: { id: string; layers: IMiddleware[] } = {
+    const result: { id: string; layers: AppMiddleware[] } = {
       id: route_id,
       layers: [],
     };
 
-    layers.forEach((layer: IMiddleware) => {
+    layers.forEach((layer: AppMiddleware) => {
       if (typeof layer !== "function") {
         showError("addLocal() need function for middleware layer");
       }
@@ -48,7 +48,7 @@ export default class Middleware {
   /**
    * Add middleware layers for all requests
    */
-  addGlobal(layers: IMiddleware[]) {
+  addGlobal(layers: AppMiddleware[]) {
     if (!layers) {
       return;
     }
@@ -69,11 +69,7 @@ export default class Middleware {
   /**
    * Get middleware layer for specific query
    */
-  private async applyLocal(
-    routeId: string,
-    req: IReq,
-    res: IRes
-  ): Promise<void> {
+  private async applyLocal(routeId: string, req: Req, res: Res): Promise<void> {
     if (!routeId) {
       showError("applyLocal() invalid route id");
     }
@@ -106,7 +102,7 @@ export default class Middleware {
   /**
    * Get middleware layers for all queries
    */
-  private async applyGlobal(req: IReq, res: IRes): Promise<void> {
+  private async applyGlobal(req: Req, res: Res): Promise<void> {
     const result = [];
 
     for (let i = 0; i < this.globals.length; i++) {
@@ -129,11 +125,7 @@ export default class Middleware {
   /**
    * Apply all middleware layers
    */
-  public async applyLayers(
-    routeId: string,
-    req: IReq,
-    res: IRes
-  ): Promise<void> {
+  public async applyLayers(routeId: string, req: Req, res: Res): Promise<void> {
     await this.applyLocal(routeId, req, res);
     await this.applyGlobal(req, res);
   }

@@ -1,22 +1,22 @@
 import querystring from "querystring";
 
 import * as utils from "../utils.js";
-import {
-  IReq,
-  IQueryBody,
-  IReqHeaders,
-  IQueryFields,
-  IQueryFiles,
-} from "../models";
-import { IQuery } from "../models/internal";
+import { Req, ReqHeaders, QueryBody, QueryFields, QueryFiles } from "../models";
+
+interface IQuery {
+  _req: Req;
+  fields: object;
+  files: object;
+  _boundary: Buffer;
+}
 
 export default class Query implements IQuery {
   _req;
-  fields: IQueryFields = {};
-  files: IQueryFiles = {};
+  fields: QueryFields = {};
+  files: QueryFiles = {};
   _boundary;
 
-  constructor(req: IReq) {
+  constructor(req: Req) {
     this._req = req;
     this._boundary = this.getBoundary(req.headers);
   }
@@ -24,7 +24,7 @@ export default class Query implements IQuery {
   /**
    * Parse body content, search for fields and files
    */
-  public parseBody(): Promise<IQueryBody> {
+  public parseBody(): Promise<QueryBody> {
     return new Promise((resolve, reject) => {
       if (this._req.method) {
         if (["GET", "HEAD"].includes(this._req.method)) {
@@ -110,7 +110,7 @@ export default class Query implements IQuery {
 
     const strBody: string = body.toString("utf8");
 
-    this.fields = querystring.parse(strBody) as IQueryFields;
+    this.fields = querystring.parse(strBody) as QueryFields;
   }
 
   /**
@@ -173,13 +173,13 @@ export default class Query implements IQuery {
     }
   }
 
-  private getBoundary(headers: IReqHeaders): Buffer {
-    if (!headers["content-type"]) {
+  private getBoundary(headers: ReqHeaders): Buffer {
+    if (!headers["Content-Type"]) {
       return Buffer.from("");
     }
 
     return Buffer.from(
-      "--" + headers["content-type"].replace(/(.*)boundary=/, "")
+      "--" + headers["Content-Type"].replace(/(.*)boundary=/, "")
     );
   }
 

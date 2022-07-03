@@ -4,11 +4,17 @@ import Middleware from "./Middleware.js";
 import Query from "./Query.js";
 import { showError, val2regexp } from "../utils.js";
 
-import { IAppRoute, IReq, IRes, IQueryBody } from "../models";
-import { IRouter } from "../models/internal";
+import { AppRoute, Req, Res, QueryBody } from "../models";
+
+interface IRouter {
+  routes: AppRoute[];
+  layers: any;
+  request_path: string;
+  request_method: string;
+}
 
 export default class Router implements IRouter {
-  routes: IAppRoute[] = [];
+  routes: AppRoute[] = [];
 
   layers = new Middleware();
 
@@ -19,7 +25,7 @@ export default class Router implements IRouter {
   /**
    * Add new rule for routing, set callback
    */
-  public addRoute(route: IAppRoute, callback: (req: IReq, res: IRes) => void) {
+  public addRoute(route: AppRoute, callback: (req: Req, res: Res) => void) {
     const methods = ["GET", "POST", "PUT", "DELETE"];
 
     if (!route.method) {
@@ -32,7 +38,7 @@ export default class Router implements IRouter {
 
     if (
       this.routes.find(
-        (item: IAppRoute) =>
+        (item: AppRoute) =>
           item.url === route.url && item.method === route.method
       )
     ) {
@@ -47,7 +53,7 @@ export default class Router implements IRouter {
   /**
    * Parse url for query parameters
    */
-  public async parseQuery(req: IReq): Promise<IAppRoute | null> {
+  public async parseQuery(req: Req): Promise<AppRoute | null> {
     if (!req.url) {
       return null;
     }
@@ -76,7 +82,7 @@ export default class Router implements IRouter {
 
     const query = new Query(req);
 
-    const { fields, files }: IQueryBody = await query.parseBody();
+    const { fields, files }: QueryBody = await query.parseBody();
 
     req.query = { ...parsedQuery.query, ...fields };
     req.files = files;
@@ -90,7 +96,7 @@ export default class Router implements IRouter {
   /**
    * Compare current request to available route rules
    */
-  private matchUrl(): IAppRoute | undefined {
+  private matchUrl(): AppRoute | undefined {
     for (let i = 0; i < this.routes.length; i++) {
       if (
         this.isMatch(
@@ -164,7 +170,7 @@ export default class Router implements IRouter {
   /**
    * Customize Node Request
    */
-  private setBasicData(req: IReq) {
+  private setBasicData(req: Req) {
     // get client IP address
     req.clientIpAddress =
       req.headers["x-real-ip"] ||

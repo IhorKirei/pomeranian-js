@@ -6,24 +6,24 @@ import Router from "./Router.js";
 import { validate, showError } from "../utils.js";
 
 import {
-  IAppSettings,
-  IAppRoute,
-  IMiddleware,
-  IReq,
-  IRes,
+  AppSettings,
+  AppRoute,
+  AppMiddleware,
+  Req,
+  Res,
   ServerSettings,
 } from "../models";
 
 export default class Application {
-  private _req: IReq | null = null;
-  private _res: IRes | null = null;
-  private _settings: IAppSettings = {};
+  private _req: Req | null = null;
+  private _res: Res | null = null;
+  private _settings: AppSettings = {};
   private _router = new Router();
 
   public start(serverSettings?: ServerSettings): void {
     http
       .createServer((req, res) => {
-        this.processRequest(req as IReq, res as IRes);
+        this.processRequest(req as Req, res as Res);
       })
       .listen(
         serverSettings?.port,
@@ -36,7 +36,7 @@ export default class Application {
   /**
    * Process every request to application
    */
-  private async processRequest(req: IReq, res: IRes) {
+  private async processRequest(req: Req, res: Res) {
     const self = this;
 
     self._req = req;
@@ -44,7 +44,6 @@ export default class Application {
 
     req.startTime = Date.now();
 
-    // set response functionality
     res.json = function (code: number, content: object) {
       if (!validate.integer(code)) {
         showError("res.json() invalid status code");
@@ -74,7 +73,6 @@ export default class Application {
       self.finishRequest();
     };
 
-    // set redirect functionality
     res.redirect = function (url: string, code: number) {
       if (!url) {
         showError("res.redirect() invalid url for redirecting");
@@ -130,7 +128,7 @@ export default class Application {
   /**
    * Change application settings
    */
-  public tune(params: IAppSettings) {
+  public tune(params: AppSettings) {
     if (!validate.object(params)) {
       showError("tune() invalid settings");
     }
@@ -158,7 +156,7 @@ export default class Application {
   /**
    * Proxy method of routing "addRoute"
    */
-  public addRoute(route: IAppRoute, layers: any, callback: any) {
+  public addRoute(route: AppRoute, layers: any, callback: any) {
     if (!callback) {
       callback = layers;
       layers = null;
@@ -203,7 +201,7 @@ export default class Application {
   /**
    * Proxy method of layers "addGlobal" (new middleware function(s))
    */
-  public useLayer(args: IMiddleware[]): void {
+  public useLayer(args: AppMiddleware[]): void {
     this._router.layers.addGlobal(args);
   }
 
