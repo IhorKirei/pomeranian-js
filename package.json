@@ -3,7 +3,7 @@
   "description": "Simple and incredibly fast framework for Node.js",
   "main": "./dist/index.js",
   "type": "module",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "author": "Ihor Kirei <ihor.kirei@gmail.com>",
   "license": "MIT",
   "keywords": [
