@@ -5,14 +5,13 @@ import { nanoid } from "nanoid";
 import Router from "./Router.js";
 import { validate, showError } from "../utils.js";
 
-import IAppSettings from "../models/IAppSettings";
-import IAppRoute from "../models/IAppRoute";
+import { IAppSettings, IAppRoute } from "../models";
 import {
   IMiddleware,
   IReq,
   IRes,
   ServerSettings,
-} from "../models/internal/misc";
+} from "../models/misc";
 
 export default class Application {
   private _req: IReq | null = null;
@@ -23,7 +22,7 @@ export default class Application {
   public start(serverSettings?: ServerSettings): void {
     http
       .createServer((req, res) => {
-        this.processRequest(req, res);
+        this.processRequest(req as IReq, res as IRes);
       })
       .listen(
         serverSettings?.port,

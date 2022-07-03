@@ -29,9 +29,9 @@ export interface IReq extends IncomingMessage {
 }
 
 export interface IRes extends ServerResponse {
-  json?(code: number, content: object): any;
-  html?(code: number, content?: string): any;
-  redirect?(url: string, code: number): any;
+  json(code: number, content: object): any;
+  html(code: number, content?: string): any;
+  redirect(url: string, code: number): any;
 }
 
 export interface IQueryField {}

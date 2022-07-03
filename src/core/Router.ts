@@ -4,9 +4,9 @@ import Middleware from "./Middleware.js";
 import Query from "./Query.js";
 import { showError, val2regexp } from "../utils.js";
 
-import { IReq, IRes, IQueryBody } from "../models/internal/misc";
-import IAppRoute from "../models/IAppRoute";
-import { IRouter } from "../models/internal/IRouter";
+import { IReq, IRes, IQueryBody } from "../models/misc";
+import { IAppRoute } from "../models";
+import { IRouter } from "../models/internal";
 
 export default class Router implements IRouter {
   routes: IAppRoute[] = [];

@@ -1,6 +1,6 @@
-import { IReq, IRes } from "./internal/misc";
+import { IReq, IRes } from "./misc";
 
-export default interface IAppRoute {
+export interface IAppRoute {
   id: string;
   method: string;
   url: string;
@@ -8,4 +8,9 @@ export default interface IAppRoute {
   query: any;
   fileParsing: boolean;
   callback(req: IReq, res: IRes): void;
+}
+
+export interface IAppSettings {
+  cors?: boolean;
+  debug?: boolean;
 }

@@ -7,8 +7,8 @@ import {
   IReqHeaders,
   IQueryFields,
   IQueryFiles,
-} from "../models/internal/misc";
-import IQuery from "../models/internal/IQuery";
+} from "../models/misc";
+import { IQuery } from "../models/internal";
 
 export default class Query implements IQuery {
   _req;
