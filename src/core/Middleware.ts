@@ -1,6 +1,6 @@
 import { showError } from "../utils.js";
 
-import { IReq, IRes, IMiddleware } from "../models/misc";
+import { IReq, IRes, IMiddleware } from "../models";
 
 export default class Middleware {
   /**

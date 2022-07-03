@@ -4,8 +4,7 @@ import Middleware from "./Middleware.js";
 import Query from "./Query.js";
 import { showError, val2regexp } from "../utils.js";
 
-import { IReq, IRes, IQueryBody } from "../models/misc";
-import { IAppRoute } from "../models";
+import { IAppRoute, IReq, IRes, IQueryBody } from "../models";
 import { IRouter } from "../models/internal";
 
 export default class Router implements IRouter {
@@ -167,7 +166,7 @@ export default class Router implements IRouter {
    */
   private setBasicData(req: IReq) {
     // get client IP address
-    req.client_ip =
+    req.clientIpAddress =
       req.headers["x-real-ip"] ||
       req.headers["x-forwarded-for"] ||
       req.connection.remoteAddress ||

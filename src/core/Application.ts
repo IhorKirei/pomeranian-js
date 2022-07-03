@@ -5,13 +5,14 @@ import { nanoid } from "nanoid";
 import Router from "./Router.js";
 import { validate, showError } from "../utils.js";
 
-import { IAppSettings, IAppRoute } from "../models";
 import {
+  IAppSettings,
+  IAppRoute,
   IMiddleware,
   IReq,
   IRes,
   ServerSettings,
-} from "../models/misc";
+} from "../models";
 
 export default class Application {
   private _req: IReq | null = null;

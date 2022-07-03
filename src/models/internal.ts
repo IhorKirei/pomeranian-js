@@ -1,5 +1,4 @@
-import { IAppRoute } from "./";
-import { IReq } from "./misc";
+import { IAppRoute, IReq } from "./";
 
 export interface IQuery {
   _req: IReq;

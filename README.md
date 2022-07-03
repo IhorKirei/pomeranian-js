@@ -145,7 +145,7 @@ app.addRoute({
 ### Variables
 While processing client's request you can get access to internal variables in **req** object:
 
-- **req.client_ip** - client's IP address
+- **req.clientIpAddress** - client's IP address
 - **req.referer** - client's referrer, identifies URL that linked to resource being requested
 - **req.params** - URL parameters
 - **req.query** - query string parameters
