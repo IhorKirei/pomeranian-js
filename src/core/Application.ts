@@ -2,8 +2,8 @@ import http from "http";
 import chalk from "chalk";
 import { nanoid } from "nanoid";
 
-import Router from "./Router";
-import { validate, showError } from "../utils";
+import Router from "./Router.js";
+import { validate, showError } from "../utils.js";
 
 import IAppSettings from "../models/IAppSettings";
 import IAppRoute from "../models/IAppRoute";
@@ -20,7 +20,7 @@ export default class Application {
   private _settings: IAppSettings = {};
   private _router = new Router();
 
-  public start(serverSettings: ServerSettings): void {
+  public start(serverSettings?: ServerSettings): void {
     http
       .createServer((req, res) => {
         this.processRequest(req, res);

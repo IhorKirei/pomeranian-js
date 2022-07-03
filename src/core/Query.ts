@@ -1,6 +1,6 @@
 import querystring from "querystring";
 
-import * as utils from "../utils";
+import * as utils from "../utils.js";
 import {
   IReq,
   IQueryBody,

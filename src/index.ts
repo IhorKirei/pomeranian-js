@@ -1,3 +1,3 @@
-import Application from "./core/Application";
+import Application from "./core/Application.js";
 
-module.exports = Application;
+export default Application;

@@ -1,8 +1,8 @@
 import url, { UrlWithParsedQuery } from "url";
 
-import Middleware from "./Middleware";
-import Query from "./Query";
-import { showError, val2regexp } from "../utils";
+import Middleware from "./Middleware.js";
+import Query from "./Query.js";
+import { showError, val2regexp } from "../utils.js";
 
 import { IReq, IRes, IQueryBody } from "../models/internal/misc";
 import IAppRoute from "../models/IAppRoute";

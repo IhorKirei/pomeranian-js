@@ -1,4 +1,4 @@
-import { showError } from "../utils";
+import { showError } from "../utils.js";
 
 import { IReq, IRes, IMiddleware } from "../models/internal/misc";
 

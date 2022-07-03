@@ -19,7 +19,7 @@ yarn add pomeranian-js
 ### Hello World
 Just a quick example how you can start.
 ```js
-const Application = require("pomeranian-js");
+import Application from "pomeranian-js";
 const app = new Application();
 
 app.addRoute({
