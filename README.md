@@ -19,17 +19,26 @@ yarn add pomeranian-js
 ### Hello World
 Just a quick example how you can start.
 ```js
-import Application from "pomeranian-js";
+import { Application, Router } from "pomeranian-js";
+
 const app = new Application();
+const router = new Router();
 
-app.addRoute({
-  method: "GET",
-  url: "/"
-}, (req, res) => {
-  res.json(200, { status: "Success" });
+router.addRule(
+  { method: "GET", url: "/" },
+  (req, res) => {
+    res.json(200, { status: "Success" });
+  }
+);
+
+app.useRouter(router);
+
+app.start({
+  port: 3000,
+  callback: () => {
+    console.log("Server is running...");
+  }
 });
-
-app.start();
 ```
 
 ### Middlewares
@@ -38,32 +47,28 @@ Basically this is a simple way to do something with **req** and **res** objects 
 You can define layers using two ways:
 
 ##### Local
-For specific route rule:
+For specific route rule (route-level):
 ```js
-app.addRoute(options, [
-  (req, res, next) => {
-    // do something with "req" and "res" objects and run callback
-    next();
-  }
-], callback);
+router.addRule(options, callback, (req, res, next) => {
+  // do something with "req" and "res" objects and run callback
+  next();
+});
 ```
 
 ##### Global
-Will be executed for all routes:
+Will be executed for all routes (app-level):
 ```js
-app.useLayer([
-  (req, res, next) => {
-    // do something with "req" and "res" objects and run callback
-    next();
-  }
-]);
+app.useMiddleware((req, res, next) => {
+  // do something with "req" and "res" objects and run callback
+  next();
+});
 ```
 
 ### Routes
-For adding a new routing rule, you should use **addRoute** method:
+For adding a new routing rule, you should use **addRule** method:
 
 ```js
-app.addRoute({
+router.addRule({
   method: String, // default GET
   url: String,
   match: Object,
@@ -84,7 +89,7 @@ This is how you can handle client's requests.
 
 You can do it with typical way:
 ```js
-app.addRoute(options, (req, res) => {
+router.addRule(options, (req, res) => {
   res.statusCode = httpCode;
   res.end(content);
 });
@@ -92,17 +97,17 @@ app.addRoute(options, (req, res) => {
 Or using our methods out of the box (**res.html**, **res.json**, **res.redirect**):
 
 ```js
-app.addRoute(options, (req, res) => {
+router.addRule(options, (req, res) => {
   res.html(httpCode, html); // return HTML content
 });
 ```
 ```js
-app.addRoute(options, (req, res) => {
+router.addRule(options, (req, res) => {
   res.json(httpCode, json); // return JSON object
 });
 ```
 ```js
-app.addRoute(options, (req, res) => {
+router.addRule(options, (req, res) => {
   res.redirect("/path/", 301); // redirect user to another page or website
 });
 ```
@@ -111,7 +116,7 @@ app.addRoute(options, (req, res) => {
 Just a few examples how you can use it:
 
 ```js
-app.addRoute({
+router.addRule({
   url: "/{category}",
   match: {
     category: ["phones", "tablets"]
@@ -121,7 +126,7 @@ app.addRoute({
 });
 ```
 ```js
-app.addRoute({
+router.addRule({
   url: "/{category}/{name}",
   match: {
     category: ["phones", "tablets"],
@@ -132,7 +137,7 @@ app.addRoute({
 });
 ```
 ```js
-app.addRoute({
+router.addRule({
   url: "/{category}/{name}",
   query: {
     password: "[a-z0-9]{3,50}"
@@ -150,28 +155,14 @@ While processing client's request you can get access to internal variables in **
 - **req.params** - URL parameters
 - **req.query** - query string parameters
 - **req.files** - name, extension, mime and content of uploaded file
-- **req.route** - current route rule
 
-### Configuration
-Using next method you can change application settings. All settings are optional.
-```js
-app.tune({
-  cors: Boolean, // default false
-  debug: Boolean // default false
-});
-```
-
-##### Parameters
-- **cors** - cross-origin resource sharing, read details [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
-- **debug** - application with enabled debug mode prints speed for each request
--
 ### Advices
 We collected some advices for you, it can be useful in some cases.
 
 ##### Page not found
 If some client's request doesn't match your routing rules, our framework will shows blank page with 404 http status. Of course for production we need more intelligent solution, so here is example how you can show your custom "not found" page:
 ```js
-app.addRoute({
+router.addRule({
   url: "/{url}",
   match: {
     url: "(.*)"

@@ -1,10 +1,12 @@
 import url, { UrlWithParsedQuery } from "url";
+import { nanoid } from "nanoid";
 
 import Middleware from "./Middleware.js";
 import Query from "./Query.js";
-import { showError, val2regexp } from "../utils.js";
+import { AppError } from "../exceptions.js";
+import { validate, showError, val2regexp } from "../utils.js";
 
-import { AppRoute, Req, Res, QueryBody } from "../models";
+import { AppRoute, Req, Res, QueryBody, AppMiddleware } from "../models";
 
 interface IRouter {
   routes: AppRoute[];
@@ -13,27 +15,56 @@ interface IRouter {
   request_method: string;
 }
 
-export default class Router implements IRouter {
+interface RouteAction {
+  (req: Req, res: Res): void;
+}
+
+interface RouteActions {
+  [key: string]: RouteAction;
+}
+
+export class Router implements IRouter {
   routes: AppRoute[] = [];
-
   layers = new Middleware();
-
   request_path: string = "";
-
   request_method = "";
+  private _actions: RouteActions = {};
 
   /**
    * Add new rule for routing, set callback
    */
-  public addRoute(route: AppRoute, callback: (req: Req, res: Res) => void) {
+  public addRule(
+    route: AppRoute,
+    action: RouteAction,
+    middlewares?: AppMiddleware | AppMiddleware[]
+  ) {
     const methods = ["GET", "POST", "PUT", "DELETE"];
 
     if (!route.method) {
       route.method = "GET";
+    } else {
+      route.method = route.method.toUpperCase();
     }
 
     if (!methods.includes(route.method)) {
-      showError("addRoute() invalid method in route");
+      showError("addRule() invalid method in route");
+    }
+
+    if (!validate.string(route.url)) {
+      showError('addRule() invalid route "url"');
+    }
+    route.url = route.url.replace(/\/+$/g, "");
+
+    if (route.match !== undefined && !validate.object(route.match)) {
+      showError('addRule() invalid route "match"');
+    }
+
+    if (route.query !== undefined && !validate.object(route.query)) {
+      showError('addRule() invalid route "query"');
+    }
+
+    if (route.fileParsing !== undefined && !validate.bool(route.fileParsing)) {
+      showError('addRule() invalid route "fileParsing"');
     }
 
     if (
@@ -42,18 +73,29 @@ export default class Router implements IRouter {
           item.url === route.url && item.method === route.method
       )
     ) {
-      showError("addRoute() duplicated url and method");
+      throw AppError.InternalError("addRule() duplicated url and method");
     }
 
-    route.callback = callback;
+    const routeKey = nanoid();
+    route.id = routeKey;
+
+    this._actions[routeKey] = action;
 
     this.routes.push(route);
+
+    if (middlewares) {
+      if (!Array.isArray(middlewares)) {
+        middlewares = [middlewares];
+      }
+
+      this.layers.addLocal(routeKey, middlewares);
+    }
   }
 
   /**
    * Parse url for query parameters
    */
-  public async parseQuery(req: Req): Promise<AppRoute | null> {
+  public async handleRequest(req: Req, res: Res): Promise<RouteAction | null> {
     if (!req.url) {
       return null;
     }
@@ -69,19 +111,17 @@ export default class Router implements IRouter {
       return null;
     }
 
-    req.route = { ...route };
-    delete req.route.callback;
-
     req.query = {};
     req.files = {};
     req.params = {};
 
+    await this.layers.applyLayers(route.id, req, res);
+
     if (!route.fileParsing) {
-      return route;
+      return this._actions[route.id];
     }
 
     const query = new Query(req);
-
     const { fields, files }: QueryBody = await query.parseBody();
 
     req.query = { ...parsedQuery.query, ...fields };
@@ -90,7 +130,7 @@ export default class Router implements IRouter {
 
     this.setBasicData(req);
 
-    return route;
+    return this._actions[route.id];
   }
 
   /**

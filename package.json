@@ -37,7 +37,7 @@
     "typescript-transform-paths": "^3.3.1"
   },
   "scripts": {
-    "format": "prettier --write \"src/**/*.ts\" **/*.json",
+    "format": "prettier --write \"src/**/*.ts\" \"**/*.json\"",
     "build": "rimraf dist && tsc",
     "release": "npm run format && npm run build && npm version patch && npm publish"
   },

@@ -1,7 +1,7 @@
 import chalk from "chalk";
 
-export const showError = (err: any): void => {
-  console.error(chalk.red(err.stack || err));
+export const showError = (errMsg: any): void => {
+  console.error(chalk.red(errMsg.stack || errMsg));
 
   process.exit(1);
 };

@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from "http";
+import { IncomingHttpHeaders, IncomingMessage, ServerResponse } from "http";
 import { UrlWithParsedQuery } from "url";
 
 export interface AppRoute {
@@ -8,22 +8,16 @@ export interface AppRoute {
   match: any;
   query: any;
   fileParsing: boolean;
-  callback(req: Req, res: Res): void;
-}
-
-export interface AppSettings {
-  cors?: boolean;
-  debug?: boolean;
 }
 
 export interface AppMiddleware {
-  (req: Req, res: Res, next: () => void): void;
+  (req: Req, res: Res, next: (err?: Error) => void): void;
 }
 
 export interface Req extends IncomingMessage {
   url?: string;
   method?: string;
-  headers: ReqHeaders | any;
+  headers: IncomingHttpHeaders | any;
   connection: any;
   socket: any;
   referer?: UrlWithParsedQuery | null;
@@ -46,11 +40,6 @@ export interface ServerSettings {
   hostname?: string;
   backlog?: number;
   callback?: () => void;
-}
-
-export interface ReqHeaders {
-  Authorization?: string;
-  "Content-Type": string;
 }
 
 export interface QueryField {}

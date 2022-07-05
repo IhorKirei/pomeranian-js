@@ -1,7 +1,8 @@
 import querystring from "querystring";
+import { IncomingHttpHeaders } from "http";
 
 import * as utils from "../utils.js";
-import { Req, ReqHeaders, QueryBody, QueryFields, QueryFiles } from "../models";
+import { Req, QueryBody, QueryFields, QueryFiles } from "../models";
 
 interface IQuery {
   _req: Req;
@@ -173,13 +174,13 @@ export default class Query implements IQuery {
     }
   }
 
-  private getBoundary(headers: ReqHeaders): Buffer {
-    if (!headers["Content-Type"]) {
+  private getBoundary(headers: IncomingHttpHeaders): Buffer {
+    if (!headers["content-type"]) {
       return Buffer.from("");
     }
 
     return Buffer.from(
-      "--" + headers["Content-Type"].replace(/(.*)boundary=/, "")
+      "--" + headers["content-type"].replace(/(.*)boundary=/, "")
     );
   }
 

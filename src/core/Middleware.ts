@@ -67,59 +67,53 @@ export default class Middleware {
   }
 
   /**
-   * Get middleware layer for specific query
+   * Apply route-level middlewares
    */
   private async applyLocal(routeId: string, req: Req, res: Res): Promise<void> {
     if (!routeId) {
       showError("applyLocal() invalid route id");
     }
 
-    const result = [];
+    const found = this.locals.find(
+      (el: { id: string; layers: AppMiddleware[] }) => el.id === routeId
+    );
 
-    for (let i = 0; i < this.locals.length; i++) {
-      if (this.locals[i].id !== routeId) {
-        continue;
-      }
-
-      for (let k = 0; k < this.locals[i].layers.length; k++) {
-        result.push(
-          new Promise((resolve, reject) => {
-            this.locals[i].layers[k](req, res, (err: Error) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve(null);
-              }
-            });
-          })
-        );
-      }
+    if (!found?.layers) {
+      return;
     }
 
-    await Promise.all(result);
-  }
-
-  /**
-   * Get middleware layers for all queries
-   */
-  private async applyGlobal(req: Req, res: Res): Promise<void> {
-    const result = [];
-
-    for (let i = 0; i < this.globals.length; i++) {
-      result.push(
-        new Promise((resolve, reject) => {
-          this.globals[i](req, res, (err: Error) => {
+    await Promise.all(
+      found.layers.map((layer: AppMiddleware) => {
+        return new Promise((resolve, reject) => {
+          layer(req, res, (err) => {
             if (err) {
               reject(err);
             } else {
               resolve(null);
             }
           });
-        })
-      );
-    }
+        });
+      })
+    );
+  }
 
-    await Promise.all(result);
+  /**
+   * Apply app-level middlewares
+   */
+  private async applyGlobal(req: Req, res: Res): Promise<void> {
+    await Promise.all(
+      this.globals.map((layer: AppMiddleware) => {
+        return new Promise((resolve, reject) => {
+          layer(req, res, (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(null);
+            }
+          });
+        });
+      })
+    );
   }
 
   /**

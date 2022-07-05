@@ -1,26 +1,21 @@
 import http from "http";
 import chalk from "chalk";
-import { nanoid } from "nanoid";
 
-import Router from "./Router.js";
-import { validate, showError } from "../utils.js";
+import { Router } from "./Router.js";
+import { AppError } from "../exceptions.js";
+import { validate } from "../utils.js";
 
-import {
-  AppSettings,
-  AppRoute,
-  AppMiddleware,
-  Req,
-  Res,
-  ServerSettings,
-} from "../models";
+import { AppMiddleware, Req, Res, ServerSettings } from "../models";
 
-export default class Application {
+export class Application {
   private _req: Req | null = null;
   private _res: Res | null = null;
-  private _settings: AppSettings = {};
   private _router = new Router();
+  private _middlewares: AppMiddleware[] = [];
 
   public start(serverSettings?: ServerSettings): void {
+    this._router.layers.addGlobal(this._middlewares);
+
     http
       .createServer((req, res) => {
         this.processRequest(req as Req, res as Res);
@@ -46,7 +41,7 @@ export default class Application {
 
     res.json = function (code: number, content: object) {
       if (!validate.integer(code)) {
-        showError("res.json() invalid status code");
+        throw AppError.InternalError("res.json() invalid status code");
       }
 
       this.statusCode = code;
@@ -58,7 +53,7 @@ export default class Application {
 
     res.html = function (code: number, content: string) {
       if (!validate.integer(code)) {
-        showError("res.html() invalid status code");
+        throw AppError.InternalError("res.html() invalid status code");
       }
 
       this.statusCode = code;
@@ -75,10 +70,14 @@ export default class Application {
 
     res.redirect = function (url: string, code: number) {
       if (!url) {
-        showError("res.redirect() invalid url for redirecting");
+        throw AppError.InternalError(
+          "res.redirect() invalid url for redirecting"
+        );
       }
       if (code !== 301 && code !== 302) {
-        showError("res.redirect() invalid code for redirecting");
+        throw AppError.InternalError(
+          "res.redirect() invalid code for redirecting"
+        );
       }
 
       this.statusCode = code;
@@ -93,125 +92,37 @@ export default class Application {
       self.finishRequest();
     };
 
-    // cross-origin resource sharing
-    if (self._settings.cors) {
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "HEAD,GET,PUT,POST,PATCH,DELETE"
-      );
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Accept,Authorization,Content-Type,Content-Length,Origin,X-Requested-With"
-      );
-
-      if (req.method === "OPTIONS") {
-        return res.html(200);
-      }
-    }
-
     try {
-      const route = await self._router.parseQuery(req);
+      const routeAction = await self._router.handleRequest(req, res);
 
-      if (!route) {
-        return res.html(404);
+      if (!routeAction) {
+        res.statusCode = 404;
+        res.end();
+      } else {
+        routeAction(req, res);
       }
-
-      await self._router.layers.applyLayers(route.id, req, res);
-
-      route.callback(req, res);
     } catch (err) {
-      showError(err);
-    }
-  }
+      console.error(err);
 
-  /**
-   * Change application settings
-   */
-  public tune(params: AppSettings) {
-    if (!validate.object(params)) {
-      showError("tune() invalid settings");
-    }
-
-    for (let name in params) {
-      if (name !== "cors" && name !== "debug") {
-        return showError("tune() invalid name");
-      }
-
-      if (params[name] !== true && params[name] !== false) {
-        return showError("tune() invalid value, expected boolean");
-      }
-
-      switch (name) {
-        case "cors":
-        case "debug":
-          this._settings[name] = params[name];
-          break;
-        default:
-          break;
+      if (err instanceof AppError) {
+        res.statusCode = err.status;
+        res.end();
       }
     }
   }
 
   /**
-   * Proxy method of routing "addRoute"
+   * Add app-level middlewares
    */
-  public addRoute(route: AppRoute, layers: any, callback: any) {
-    if (!callback) {
-      callback = layers;
-      layers = null;
-    }
-
-    // validate new rule
-    if (!validate.object(route)) {
-      showError("addRoute() invalid route");
-    }
-
-    if (!validate.string(route.url)) {
-      showError('addRoute() invalid route "url"');
-    }
-    route.url = route.url.replace(/\/+$/g, "");
-
-    if (route.method) {
-      if (!validate.string(route.method)) {
-        showError('addRoute() invalid route "method"');
-      }
-      route.method = route.method.toUpperCase();
-    }
-
-    if (route.match !== undefined && !validate.object(route.match)) {
-      showError('addRoute() invalid route "match"');
-    }
-
-    if (route.query !== undefined && !validate.object(route.query)) {
-      showError('addRoute() invalid route "query"');
-    }
-
-    if (route.fileParsing !== undefined && !validate.bool(route.fileParsing)) {
-      showError('addRoute() invalid route "fileParsing"');
-    }
-
-    route.id = nanoid();
-
-    this._router.addRoute(route, callback);
-
-    this._router.layers.addLocal(route.id, layers);
+  public useMiddleware(...list: AppMiddleware[]): void {
+    this._middlewares = this._middlewares.concat(list);
   }
 
-  /**
-   * Proxy method of layers "addGlobal" (new middleware function(s))
-   */
-  public useLayer(args: AppMiddleware[]): void {
-    this._router.layers.addGlobal(args);
+  public useRouter(router: Router) {
+    this._router = router;
   }
 
-  /**
-   * Request finished (show debug information)
-   */
   private finishRequest(): void {
-    if (!this._settings.debug) {
-      return;
-    }
     if (!this._req || !this._req.url || !this._req.startTime) {
       return;
     }

@@ -1,12 +1,4 @@
-import Application from "./core/Application.js";
+export { Application } from "./core/Application.js";
+export { Router } from "./core/Router.js";
 
-export default Application;
-
-export {
-  AppRoute,
-  AppSettings,
-  AppMiddleware,
-  Req,
-  Res,
-  ServerSettings,
-} from "./models";
+export { AppRoute, AppMiddleware, Req, Res, ServerSettings } from "./models";
